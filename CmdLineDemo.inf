@@ -1,0 +1,28 @@
+##
+#
+# CmdLineDemo.inf
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = CmdLineDemo
+  FILE_GUID                      = af83cdea-ca40-450c-9dd3-79bb62311335
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = ShellCEntryLib
+
+[Sources]
+  CmdLineDemo.c
+  CmdLineLib/CmdLine.c
+  CmdLineLib/CmdLine.h
+  CmdLineLib/CmdLineInternal.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+
+[LibraryClasses]
+  UefiLib
+  ShellCEntryLib
+  ShellLib
