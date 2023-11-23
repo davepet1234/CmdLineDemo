@@ -1,8 +1,11 @@
-##
+########################################################################
 #
 # CmdLineDemo.inf
 #
-##
+# Author: David Petrovic
+# GitHub: https://github.com/davepet1234/CmdLineDemo
+#
+##########################################################################
 
 [Defines]
   INF_VERSION                    = 0x00010006

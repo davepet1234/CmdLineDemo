@@ -1,13 +1,13 @@
 /***********************************************************************
 
- CmdLineTest.c
+ CmdLineDemo.c
  
  Author: David Petrovic
- GitHub: https://github.com/davepet1234/CmdLine2
+ GitHub: https://github.com/davepet1234/CmdLineDemo
 
- Test application to test and demonstate the command line parser.
+ Demo application to test and demonstate the command line parser.
 
- Run "CmdLine.efi -h" to get help 
+ Run "CmdLineDemo.efi -h" to get help 
 
 ***********************************************************************/
 
