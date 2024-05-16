@@ -104,7 +104,7 @@ INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
 
     // variable used for user input testing
     EFI_STATUS InputStatus;
-    CONST UINTN BUFF_LEN=128;
+    #define BUFF_LEN 128
     CHAR16 UserString[BUFF_LEN];
     UserString[0] = '\0';
     UINTN UserNumber = 0;
