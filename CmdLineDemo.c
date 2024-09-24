@@ -19,10 +19,11 @@
 #include "CmdLineLib/CmdLine.h"
 
 // Parameter variables
-#define STR_MAXSIZE 20
+#define STR_MAXSIZE 32
 CHAR16  Param1[STR_MAXSIZE] = L"default string";
 UINT8   Param2  = 0;
 UINTN   Param3  = 0;
+CHAR8   Param4[STR_MAXSIZE] = "default ascii string";
 
 // Switch variables
 typedef enum { ENUM_BLACK, ENUM_RED, ENUM_GREEN, ENUM_BLUE, ENUM_WHITE } ENUM_COLOUR;
@@ -34,6 +35,7 @@ UINT8       DecValue    = 0;
 UINTN       HexValue    = 0;
 UINT16      IntValue    = 0;
 CHAR16      StringValue[STR_MAXSIZE] = L"not initialised";
+CHAR8       AsciiStrValue[STR_MAXSIZE] = "ascii not initialised";
 UINT16      Lines       = 0;
 ENUM_INPUT_TYPE InputType = ENUM_STR;
 CHAR16      KeyPressList[STR_MAXSIZE] = L"";
@@ -45,6 +47,7 @@ BOOLEAN DecValPresent;
 BOOLEAN HexValPresent;
 BOOLEAN IntValPresent;
 BOOLEAN StrValPresent;
+BOOLEAN AStrValPresent;
 BOOLEAN LinesPresent;
 BOOLEAN InputPresent;
 BOOLEAN KeyPressPresent;
@@ -55,9 +58,10 @@ CHAR16 ProgHelpStr[]    = L"Application to test command line parser";
 
 // Parameter table defines 3 arguments
 PARAMTABLE_START(ParamTable)
-PARAMTABLE_STR(Param1, STR_MAXSIZE, L"[str]string parameter")
-PARAMTABLE_HEX8(&Param2,            L"[num1]hexidecimal parameter")
-PARAMTABLE_DEC(&Param3,             L"[num2]decimal parameter")
+PARAMTABLE_STR(     Param1, STR_MAXSIZE,    L"[str]string parameter")
+PARAMTABLE_HEX8(    &Param2,                L"[num1]hexidecimal parameter")
+PARAMTABLE_DEC(     &Param3,                L"[num2]decimal parameter")
+PARAMTABLE_STR8(    Param4, STR_MAXSIZE,    L"[str8]ascii string parameter")
 PARAMTABLE_END
 
 // String definitions for enum switch
@@ -87,6 +91,7 @@ SWTABLE_MAN_DEC8_FLGD(  L"-d",  L"-dec",        &DecValPresent,     &DecValue,  
 SWTABLE_OPT_HEX_FLGD(   L"-x",  L"-hex",        &HexValPresent,     &HexValue,                  L"[num]hexidecimal value")
 SWTABLE_OPT_INT16_FLGD( L"-i",  NULL,           &IntValPresent,     &IntValue,                  L"[num]integer value")
 SWTABLE_OPT_STR_FLGD(   L"-s",  L"-string",     &StrValPresent,     StringValue, STR_MAXSIZE,   L"[str]string value")
+SWTABLE_OPT_STR8_FLGD(  L"-a",  L"-ascii",      &AStrValPresent,    AsciiStrValue, STR_MAXSIZE, L"[str8]ascii string value")
 // switches to test user interaction
 SWTABLE_OPT_INT16_FLGD( L"-l",  L"-lines",      &LinesPresent,      &Lines,                     L"[num]display 'num' lines - test break/abort")
 SWTABLE_OPT_ENUM_FLGD(  NULL,   L"-input",      &InputPresent,      &InputType, InputTypeStrs,  L"[type]test User input")
@@ -164,20 +169,22 @@ INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
     ShellPrintEx(-1, -1, L"========================================\n");
     if (ShellStatus == SHELL_SUCCESS) {
         ShellPrintEx(-1, -1, L"Parameters (%u):\n", ParamCount);
-        ShellPrintEx(-1, -1, L"%c Param1      = '%s'\n",        ParamCount >= 1 ? '*':' ',  Param1);
-        ShellPrintEx(-1, -1, L"%c Param2      = %d, 0x%02x\n",  ParamCount >= 2 ? '*':' ',  Param2, Param2);
-        ShellPrintEx(-1, -1, L"%c Param3      = %d, 0x%02x\n",  ParamCount >= 3 ? '*':' ',  Param3, Param3);
+        ShellPrintEx(-1, -1, L"%c Param1        = '%s'\n",        ParamCount >= 1 ? '*':' ',  Param1);
+        ShellPrintEx(-1, -1, L"%c Param2        = %d, 0x%02x\n",  ParamCount >= 2 ? '*':' ',  Param2, Param2);
+        ShellPrintEx(-1, -1, L"%c Param3        = %d, 0x%02x\n",  ParamCount >= 3 ? '*':' ',  Param3, Param3);
+        ShellPrintEx(-1, -1, L"%c Param4        = '%a'\n",        ParamCount >= 4 ? '*':' ',  Param4);
         ShellPrintEx(-1, -1, L"Options:\n");
-        ShellPrintEx(-1, -1, L"%c Flag        = %u\n",          Flag ? '*':' ',             Flag);
-        ShellPrintEx(-1, -1, L"%c Flag2       = %u\n",          (Flag2 != 0)  ? '*':' ',    Flag2);
-        ShellPrintEx(-1, -1, L"%c Colour      = %u\n",          ColourPresent ? '*':' ',    Colour);
-        ShellPrintEx(-1, -1, L"%c DecValue    = %u\n",          DecValPresent ? '*':' ',    DecValue);
-        ShellPrintEx(-1, -1, L"%c HexValue    = %u, 0x%02x\n",  HexValPresent ? '*':' ',    HexValue, HexValue);
-        ShellPrintEx(-1, -1, L"%c IntValue    = %u, 0x%02x\n",  IntValPresent ? '*':' ',    IntValue, IntValue);
-        ShellPrintEx(-1, -1, L"%c StringValue = '%s'\n",        StrValPresent ? '*':' ',    StringValue);
-        ShellPrintEx(-1, -1, L"%c Lines       = %u\n",          LinesPresent  ? '*':' ',    Lines);
-        ShellPrintEx(-1, -1, L"%c Input       = %u\n",          InputPresent  ? '*':' ',    InputType);
-        ShellPrintEx(-1, -1, L"%c Key         = '%s'\n",        KeyPressPresent  ? '*':' ', KeyPressList);
+        ShellPrintEx(-1, -1, L"%c Flag          = %u\n",          Flag ? '*':' ',             Flag);
+        ShellPrintEx(-1, -1, L"%c Flag2         = %u\n",          (Flag2 != 0)  ? '*':' ',    Flag2);
+        ShellPrintEx(-1, -1, L"%c Colour        = %u\n",          ColourPresent ? '*':' ',    Colour);
+        ShellPrintEx(-1, -1, L"%c DecValue      = %u\n",          DecValPresent ? '*':' ',    DecValue);
+        ShellPrintEx(-1, -1, L"%c HexValue      = %u, 0x%02x\n",  HexValPresent ? '*':' ',    HexValue, HexValue);
+        ShellPrintEx(-1, -1, L"%c IntValue      = %u, 0x%02x\n",  IntValPresent ? '*':' ',    IntValue, IntValue);
+        ShellPrintEx(-1, -1, L"%c StringValue   = '%s'\n",        StrValPresent ? '*':' ',    StringValue);
+        ShellPrintEx(-1, -1, L"%c AsciiStrValue = '%a'\n",        AStrValPresent ? '*':' ',   AsciiStrValue);
+        ShellPrintEx(-1, -1, L"%c Lines         = %u\n",          LinesPresent  ? '*':' ',    Lines);
+        ShellPrintEx(-1, -1, L"%c Input         = %u\n",          InputPresent  ? '*':' ',    InputType);
+        ShellPrintEx(-1, -1, L"%c Key           = '%s'\n",        KeyPressPresent  ? '*':' ', KeyPressList);
     }
     ShellPrintEx(-1, -1, L"ShellStatus   = %d\n", ShellStatus);
     ShellPrintEx(-1, -1, L"========================================\n");
