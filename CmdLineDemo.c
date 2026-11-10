@@ -56,10 +56,10 @@ BOOLEAN KeyPressPresent;
 CHAR16 ProgName[]       = L"CmdLine";
 CHAR16 ProgHelpStr[]    = L"Application to test command line parser";
 
-// Parameter table defines 3 arguments
+// Parameter table defines 4 arguments
 PARAMTABLE_START(ParamTable)
 PARAMTABLE_STR(     Param1, STR_MAXSIZE,    L"[str]string parameter")
-PARAMTABLE_HEX8(    &Param2,                L"[num1]hexidecimal parameter")
+PARAMTABLE_HEX8(    &Param2,                L"[num1]hexadecimal parameter")
 PARAMTABLE_DEC(     &Param3,                L"[num2]decimal parameter")
 PARAMTABLE_STR8(    Param4, STR_MAXSIZE,    L"[str8]ascii string parameter")
 PARAMTABLE_END
@@ -75,20 +75,20 @@ ENUMSTR_END
 
 // String definitions for input switch
 ENUMSTR_START(InputTypeStrs)
-ENUMSTR_ENTRY(ENUM_BLACK,  L"str")
-ENUMSTR_ENTRY(ENUM_RED,    L"dec")
-ENUMSTR_ENTRY(ENUM_GREEN,  L"hex")
-ENUMSTR_ENTRY(ENUM_BLUE,   L"int")
+ENUMSTR_ENTRY(ENUM_STR,    L"str")
+ENUMSTR_ENTRY(ENUM_DEC,    L"dec")
+ENUMSTR_ENTRY(ENUM_HEX,    L"hex")
+ENUMSTR_ENTRY(ENUM_INT,    L"int")
 ENUMSTR_END
 
-// Switch table defines 7 switches
+// Switch table defines 11 switches
 SWTABLE_START(SwitchTable)
 // test switches
 SWTABLE_OPT_FLAG(       L"-f",  NULL,           &Flag,                                          L"boolean flag")
 SWTABLE_OPT_FLGVAL(     NULL,   L"-flag2",      &Flag2, 12345678,                               L"flag with default value assigned")
 SWTABLE_OPT_ENUM_FLGD(  L"-c",  L"-colour",     &ColourPresent,     &Colour, EnumColourStrs,    L"[val]named option")
 SWTABLE_MAN_DEC8_FLGD(  L"-d",  L"-dec",        &DecValPresent,     &DecValue,                  L"[num]decimal value (0-255)")
-SWTABLE_OPT_HEX_FLGD(   L"-x",  L"-hex",        &HexValPresent,     &HexValue,                  L"[num]hexidecimal value")
+SWTABLE_OPT_HEX_FLGD(   L"-x",  L"-hex",        &HexValPresent,     &HexValue,                  L"[num]hexadecimal value")
 SWTABLE_OPT_INT16_FLGD( L"-i",  NULL,           &IntValPresent,     &IntValue,                  L"[num]integer value")
 SWTABLE_OPT_STR_FLGD(   L"-s",  L"-string",     &StrValPresent,     StringValue, STR_MAXSIZE,   L"[str]string value")
 SWTABLE_OPT_STR8_FLGD(  L"-a",  L"-ascii",      &AStrValPresent,    AsciiStrValue, STR_MAXSIZE, L"[str8]ascii string value")
@@ -108,12 +108,12 @@ INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
     UINTN ParamCount;
 
     // variable used for user input testing
-    EFI_STATUS InputStatus;
+    EFI_STATUS InputStatus = EFI_NOT_STARTED;
     #define BUFF_LEN 128
     CHAR16 UserString[BUFF_LEN];
     UserString[0] = '\0';
     UINTN UserNumber = 0;
-    EFI_STATUS KeyStatus;
+    EFI_STATUS KeyStatus = EFI_NOT_STARTED;
     CHAR16 KeyPressed = 0;
 
     // Parse the command line
@@ -127,7 +127,7 @@ INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
     // No command line errors so handle additioanl tests
     if (ShellStatus == SHELL_SUCCESS) {
 
-        // break switch '-b' test
+        // lines switch '-l' test (use '-b' to test break)
         if (LinesPresent) {
             for (UINT16 i=0; i<Lines; i++) {
                 ShellPrintEx(-1, -1, L"Line %u\n", i);
@@ -145,7 +145,7 @@ INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
                 InputStatus = DecimalInput(&UserNumber, L"Enter decimal number: ");
                 break;
             case ENUM_HEX:
-                InputStatus = HexidecimalInput(&UserNumber, L"Enter hexidecimal number: ");
+                InputStatus = HexadecimalInput(&UserNumber, L"Enter hexadecimal number: ");
                 break;
             case ENUM_INT:
                 InputStatus = IntegerInput(&UserNumber, L"Enter integer number: ");
@@ -168,17 +168,17 @@ INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
     // Display parmaeter and switch status
     ShellPrintEx(-1, -1, L"========================================\n");
     if (ShellStatus == SHELL_SUCCESS) {
-        ShellPrintEx(-1, -1, L"Parameters (%u):\n", ParamCount);
+        ShellPrintEx(-1, -1, L"Parameters (%lu):\n", (UINT64)ParamCount);
         ShellPrintEx(-1, -1, L"%c Param1        = '%s'\n",        ParamCount >= 1 ? '*':' ',  Param1);
         ShellPrintEx(-1, -1, L"%c Param2        = %d, 0x%02x\n",  ParamCount >= 2 ? '*':' ',  Param2, Param2);
-        ShellPrintEx(-1, -1, L"%c Param3        = %d, 0x%02x\n",  ParamCount >= 3 ? '*':' ',  Param3, Param3);
+        ShellPrintEx(-1, -1, L"%c Param3        = %lu, 0x%02lx\n", ParamCount >= 3 ? '*':' ',  (UINT64)Param3, (UINT64)Param3);
         ShellPrintEx(-1, -1, L"%c Param4        = '%a'\n",        ParamCount >= 4 ? '*':' ',  Param4);
         ShellPrintEx(-1, -1, L"Options:\n");
         ShellPrintEx(-1, -1, L"%c Flag          = %u\n",          Flag ? '*':' ',             Flag);
-        ShellPrintEx(-1, -1, L"%c Flag2         = %u\n",          (Flag2 != 0)  ? '*':' ',    Flag2);
+        ShellPrintEx(-1, -1, L"%c Flag2         = %lu\n",         (Flag2 != 0)  ? '*':' ',    (UINT64)Flag2);
         ShellPrintEx(-1, -1, L"%c Colour        = %u\n",          ColourPresent ? '*':' ',    Colour);
         ShellPrintEx(-1, -1, L"%c DecValue      = %u\n",          DecValPresent ? '*':' ',    DecValue);
-        ShellPrintEx(-1, -1, L"%c HexValue      = %u, 0x%02x\n",  HexValPresent ? '*':' ',    HexValue, HexValue);
+        ShellPrintEx(-1, -1, L"%c HexValue      = %lu, 0x%02lx\n", HexValPresent ? '*':' ',    (UINT64)HexValue, (UINT64)HexValue);
         ShellPrintEx(-1, -1, L"%c IntValue      = %u, 0x%02x\n",  IntValPresent ? '*':' ',    IntValue, IntValue);
         ShellPrintEx(-1, -1, L"%c StringValue   = '%s'\n",        StrValPresent ? '*':' ',    StringValue);
         ShellPrintEx(-1, -1, L"%c AsciiStrValue = '%a'\n",        AStrValPresent ? '*':' ',   AsciiStrValue);
@@ -190,7 +190,7 @@ INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
     ShellPrintEx(-1, -1, L"========================================\n");
 
     // Display user input test results
-    if (InputPresent || KeyPressPresent) {
+    if ((ShellStatus == SHELL_SUCCESS) && (InputPresent || KeyPressPresent)) {
         if (InputPresent) {
             switch (InputType) {
             case ENUM_STR:
@@ -199,7 +199,7 @@ INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
             case ENUM_DEC:
             case ENUM_HEX:
             case ENUM_INT:
-                ShellPrintEx(-1, -1, L"Number Input: %d, 0x%02X - %r\n", UserNumber, UserNumber, InputStatus);
+                ShellPrintEx(-1, -1, L"Number Input: %lu, 0x%02lX - %r\n", (UINT64)UserNumber, (UINT64)UserNumber, InputStatus);
                 break;
             default:
                 break;
